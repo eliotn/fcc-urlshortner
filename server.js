@@ -12,7 +12,7 @@ app.get('/new/*', function (req, res) {
     res.send({"error":"The url does not contain a valid protocol!"});
     return;
   }
-  mongo.connect(process.env.DATABASE_URL, function(err, db) {
+  mongo.connect(process.env.MONGOLAB_URI, {native_parser:true}, function(err, db) {
     if (err) {
       console.error(err.toString());
       res.send("I could not generate a new url!");
@@ -46,7 +46,7 @@ app.get('/new/*', function (req, res) {
 
 app.get('/v/:UNIQUEID', function (req, res) {
   console.log(req.params.UNIQUEID);
-  mongo.connect(process.env.DATABASE_URL, function(err, db) {
+  mongo.connect(process.env.MONGOLAB_URI, {native_parser:true}, function(err, db) {
     if (err) {
       console.error(err.toString());
       return;
