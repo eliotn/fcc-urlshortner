@@ -21,6 +21,7 @@
   "homepage": "https://github.com/eliotn/fcc-urlshortner#readme",
   "dependencies": {
     "express": "^4.14.0",
-    "mongodb": "^2.2.10"
+    "mongodb": "^2.2.10",
+    "url": "^0.11.0"
   }
 }
