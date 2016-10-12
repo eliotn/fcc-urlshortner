@@ -3,7 +3,22 @@ var app = express();
 var mongo = require('mongodb').MongoClient;
 var ObjectId = require('mongodb').ObjectId; 
 var url = require('url')
-var largeprime = 492876289;
+mongo.connect(process.env.MONGODB_URI || "mongodb://localhost:27017/learnyoumongo", {native_parser:true}, function(err, db) {
+  
+  if (err) {
+    console.error(err.toString());
+    return;
+  }
+  db.collection('urls').createIndex( { "_id": "hashed"}, null,
+  function(err, results) {
+    if (err) {console.error(err.toString());}
+    else {console.log(results);}
+    db.close();
+    return;
+  });
+  //db.collection('urls').createIndex({_id: "hashed"});
+});
+app.use(express.static(__dirname + '/public'));
 app.get('/new/*', function (req, res) {
   res.set({'Content-Type': 'application/json'});
   var extractedurl = req.path.slice(5);
@@ -16,15 +31,16 @@ app.get('/new/*', function (req, res) {
     if (err) {
       console.error(err.toString());
       res.send("I could not generate a new url!");
-      db.close();
       return;
     }
     //add a blank entry first, then fetch the id and use
     //that to show where to access everything
     
     var urlobj = {
-        "originalurl":extractedurl
+      "createdAt": new Date(),
+      "originalurl":extractedurl
     };
+    
     db.collection('urls').insert(urlobj, function(err) {
       if (err) {
         res.send({"error":err.toString()});
@@ -33,7 +49,7 @@ app.get('/new/*', function (req, res) {
       else {
         console.log(urlobj._id);
         res.send({
-          "shortenedurl": req.headers.host + "/v/" + urlobj._id,
+          "shortenedurl": req.headers.host + "/v/" + urlobj._id_hashed,
           "originalurl": urlobj.originalurl
         });
       }
