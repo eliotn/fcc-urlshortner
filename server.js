@@ -1,8 +1,10 @@
 var express = require('express');
 var app = express();
 var mongo = require('mongodb').MongoClient;
-var ObjectId = require('mongodb').ObjectId; 
 var url = require('url')
+var Hashids = require('hashids')
+var hashids = new Hashids("SUPERHASHLIB")
+//add our new counter
 mongo.connect(process.env.MONGODB_URI || "mongodb://localhost:27017/learnyoumongo", {native_parser:true}, function(err, db) {
   
   if (err) {
@@ -35,10 +37,9 @@ app.get('/new/*', function (req, res) {
       res.send("I could not generate a new url!");
       return;
     }
-    //add a blank entry first, then fetch the id and use
-    //that to show where to access everything
+    //get the new id by using a counter
+    //no rish of collision for these numbers
     
-    //hash 
     var id = -1;
     db.collection('counters').update(
     { _id: "urlcounter" },
@@ -47,8 +48,6 @@ app.get('/new/*', function (req, res) {
       db.collection('counters').find({"_id":"urlcounter"}).toArray(function(err, result) {
         if (err) { res.send({"error":err.toString()}); }
         id = result[0].seq;
-        console.log(id);
-        if (id === -1) {res.send({"error":"could not generate the url: -1"});return;}
         var urlobj = {
           "createdAt": new Date(),
           "originalurl":extractedurl,
@@ -60,11 +59,9 @@ app.get('/new/*', function (req, res) {
             return;
           }
           else {
-            console.log(urlobj);
-            console.log(urlobj._id);
             db.close();
             res.send({
-              "shortenedurl": req.headers.host + "/v/" + urlobj._id,
+              "shortenedurl": req.headers.host + "/v/" + hashids.encode(urlobj._id),
               "originalurl": urlobj.originalurl
             });
           }
@@ -72,20 +69,17 @@ app.get('/new/*', function (req, res) {
         })
       });
     });
-    
-    
-    
   });
 });
 
+//find the url in the collection and redirect to it if we can (decode the id to an integer)
 app.get('/v/:UNIQUEID', function (req, res) {
   mongo.connect(process.env.MONGODB_URI || "mongodb://localhost:27017/learnyoumongo", {native_parser:true}, function(err, db) {
     if (err) {
       console.error(err.toString());
       return;
     }
-    //"_id":req.params.UNIQUEID
-    db.collection("urls").find({"_id":req.params.UNIQUEID.toString()}).toArray(function(err, results) {
+    db.collection("urls").find({"_id":hashids.decode(req.params.UNIQUEID)[0].toString()}).toArray(function(err, results) {
       if (err || !results.length) {
         if (err) {
           console.error("Error: " + err.toString());
@@ -98,8 +92,6 @@ app.get('/v/:UNIQUEID', function (req, res) {
         db.close();
       }
       else {
-        console.log(results)
-        console.log(results[0].originalurl);
         res.redirect(301, results[0].originalurl);
         db.close();
       }
