@@ -11,7 +11,7 @@ mongo.connect(process.env.MONGODB_URI || "mongodb://localhost:27017/learnyoumong
     console.error(err.toString());
     return;
   }
-  db.collection('counters').insert( { "_id": "urlcounter", "seq":"0"}, null,
+  db.collection('counters').insert( { "_id": "urlcounter", "seq":0}, null,
   function(err, results) {
     if (err) {db.close(); return;}//already here
     db.close();
