@@ -25,7 +25,8 @@ mongo.connect(process.env.MONGODB_URI || "mongodb://localhost:27017/learnyoumong
 app.use(express.static(__dirname + '/public'));
 app.get('/new/*', function (req, res) {
   res.set({'Content-Type': 'application/json'});
-  var extractedurl = req.path.slice(5);
+  var extractedurl = req.originalUrl.slice(5);
+  console.log(extractedurl);
   //TODO: Maybe this coud be better
   if (!url.parse(extractedurl).protocol) {
     res.send({"error":"The url does not contain a valid protocol!"});
@@ -61,7 +62,7 @@ app.get('/new/*', function (req, res) {
           else {
             db.close();
             res.send({
-              "shortenedurl": req.headers.host + "/v/" + hashids.encode(urlobj._id),
+              "shortenedurl": req.protocol + "://" + req.headers.host + "/v/" + hashids.encode(urlobj._id),
               "originalurl": urlobj.originalurl
             });
           }
@@ -79,6 +80,7 @@ app.get('/v/:UNIQUEID', function (req, res) {
       console.error(err.toString());
       return;
     }
+    console.log(hashids.decode(req.params.UNIQUEID)[0].toString());
     db.collection("urls").find({"_id":hashids.decode(req.params.UNIQUEID)[0].toString()}).toArray(function(err, results) {
       if (err || !results.length) {
         if (err) {
@@ -92,6 +94,7 @@ app.get('/v/:UNIQUEID', function (req, res) {
         db.close();
       }
       else {
+        res.set({'Location':results[0].originalurl});
         res.redirect(301, results[0].originalurl);
         db.close();
       }

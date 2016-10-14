@@ -15,9 +15,27 @@ $(document).ready(function() {
    var x = document.URL;
    $(".url").text(x);
    $("#shortenurl").on("click", function() {
-      $("#url").val("");
-      $("#shorturl").val("testing!");
-   });
+      $.ajax({
+        url: x + "new/" + $("#url").val(),
+        dataType: 'json', type:"GET",
+        success: function(data) {
+          if ("error" in data) {
+              $("#shorturl").val("Error: " + data.error);
+              $("#url").val("");
+          }
+          else {
+            $("#url").val(data.originalurl);
+            $("#shorturl").val(data.shortenedurl);
+          }
+          console.log(data);
+        }
+      })
+    });
+    $("#visiturl").on("click", function () {
+      if ($("#url").val() !== "") {
+        window.open($("#url").val());
+      }
+    });
 });
 </script>
 </head>
@@ -27,8 +45,8 @@ $(document).ready(function() {
   <p>You can shorten a url by typing <span class="url"></span>new/[Your URL here]</p>
   <p>Then enter the shortened url it gives you in order to go to that webpage.</p>
   <p>Or you can use this handy gui:</p>
-    URL: <input type="text" id="url"><input id="shortenurl" type="submit" value="Shorten">
-    Shortened URL: <input type="text" id="shorturl"> 
+    URL: <textarea cols="50" rows="10" id="url"></textarea><input id="shortenurl"  type="submit" value="Shorten"><br>
+    Shortened URL: <input type="text" size="50" id="shorturl"><input id="visiturl" type="submit" value="Try it"><br>
 <center>Written and Coded by Eliot Glairon as part of <a href="https://www.freecodecamp.com/" target="_blank">freeCodeCamp</a>. <a href="https://www.linkedin.com/in/eliotglairon" target="_blank"><i class="fi-social-linkedin"></i></a><a href="https://github.com/eliotn"
       target="_blank"><i class="fi-social-github"></i></a><a href="https://www.twitter.com/eliotglairon"><i class="fi-social-twitter"></i></a>
 
