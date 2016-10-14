@@ -14,16 +14,21 @@ body {
 $(document).ready(function() {
    var x = document.URL;
    $(".url").text(x);
+   $("#shortenurl").on("click", function() {
+      $("#url").val("");
+      $("#shorturl").val("testing!");
+   });
 });
 </script>
 </head>
 <body>
 <h1>Welcome to Eliot Glairon's URL Shortner Microservice.</h1>
   <p>This url shortener microservice is useful when you have a long url.</p>
-  <p>You can shorten a url by typing <span class="url"></span>/new/[Your URL here]</p>
-  <p>Then enter the url it gives you in order to go to that webpage.</p>
-
-
+  <p>You can shorten a url by typing <span class="url"></span>new/[Your URL here]</p>
+  <p>Then enter the shortened url it gives you in order to go to that webpage.</p>
+  <p>Or you can use this handy gui:</p>
+    URL: <input type="text" id="url"><input id="shortenurl" type="submit" value="Shorten">
+    Shortened URL: <input type="text" id="shorturl"> 
 <center>Written and Coded by Eliot Glairon as part of <a href="https://www.freecodecamp.com/" target="_blank">freeCodeCamp</a>. <a href="https://www.linkedin.com/in/eliotglairon" target="_blank"><i class="fi-social-linkedin"></i></a><a href="https://github.com/eliotn"
       target="_blank"><i class="fi-social-github"></i></a><a href="https://www.twitter.com/eliotglairon"><i class="fi-social-twitter"></i></a>
 
