@@ -1,3 +1,4 @@
+const MONGO_URI = process.env.MONGODB_URI || "mongodb://localhost:27017/learnyoumongo";
 var express = require('express');
 var app = express();
 var mongo = require('mongodb').MongoClient;
@@ -5,7 +6,7 @@ var url = require('url')
 var Hashids = require('hashids')
 var hashids = new Hashids("SUPERHASHLIB")
 //add our new counter
-mongo.connect(process.env.MONGODB_URI || "mongodb://localhost:27017/learnyoumongo", {native_parser:true}, function(err, db) {
+mongo.connect(MONGO_URI, {native_parser:true}, function(err, db) {
   
   if (err) {
     console.error(err.toString());
@@ -39,36 +40,33 @@ app.get('/new/*', function (req, res) {
       return;
     }
     //get the new id by using a counter
-    //no rish of collision for these numbers
+    //no risk of collision for these numbers
     
     var id = -1;
-    db.collection('counters').update(
+    db.collection('counters').findOneAndUpdate(
     { _id: "urlcounter" },
     { $inc: { seq: 1 } }, function(err, result) {
       if (err) { res.send({"error":err.toString()}); }
-      db.collection('counters').find({"_id":"urlcounter"}).toArray(function(err, result) {
-        if (err) { res.send({"error":err.toString()}); }
-        id = result[0].seq;
-        var urlobj = {
-          "createdAt": new Date(),
-          "originalurl":extractedurl,
-          "_id": id.toString()
-        };
-        db.collection('urls').insert(urlobj, function(err) {
-          if (err) {
-            res.send({"error":err.toString()});
-            return;
-          }
-          else {
-            db.close();
-            res.send({
-              "shortenedurl": req.protocol + "://" + req.headers.host + "/v/" + hashids.encode(urlobj._id),
-              "originalurl": urlobj.originalurl
-            });
-          }
+      id = result.value.seq;
+      var urlobj = {
+        "createdAt": new Date(),
+        "originalurl":extractedurl,
+        "_id": id.toString()
+      };
+      db.collection('urls').insert(urlobj, function(err) {
+        if (err) {
+          res.send({"error":err.toString()});
+          return;
+        }
+        else {
+          db.close();
+          res.send({
+            "shortenedurl": req.protocol + "://" + req.headers.host + "/v/" + hashids.encode(urlobj._id),
+            "originalurl": urlobj.originalurl
+          });
+        }
           
-        })
-      });
+      })
     });
   });
 });
